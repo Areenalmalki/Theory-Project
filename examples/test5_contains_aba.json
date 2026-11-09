@@ -1,0 +1,15 @@
+{
+  "name": "Test 5 - Strings containing the substring aba",
+  "description": "L5 = { w in {a,b}* : w contains aba }. Shows how the DFA tracks partial matches.",
+  "language_regex": "[ab]*aba[ab]*",
+  "states": ["q0", "q1", "q2", "q3"],
+  "alphabet": ["a", "b"],
+  "start": "q0",
+  "accepting": ["q3"],
+  "transitions": {
+    "q0": {"a": ["q0", "q1"], "b": ["q0"]},
+    "q1": {"b": ["q2"]},
+    "q2": {"a": ["q3"]},
+    "q3": {"a": ["q3"], "b": ["q3"]}
+  }
+}

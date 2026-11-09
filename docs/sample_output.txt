@@ -1,0 +1,215 @@
+======================================================================
+Input file: examples/test1_ends_with_01.json
+----------------------------------------------------------------------
+NFA
+  Q  = {q0, q1, q2}
+  Σ  = {0, 1}
+  q0 = q0
+  F  = {q2}
+  δ  :
+       δ(q0, 0) = {q0, q1}
+       δ(q0, 1) = {q0}
+       δ(q1, 1) = {q2}
+----------------------------------------------------------------------
+Subset construction steps
+  Start state: E({q0}) = {q0}
+  δ'({q0}, 0) = {q0,q1}   ← new state
+  δ'({q0}, 1) = {q0}
+  δ'({q0,q1}, 0) = {q0,q1}
+  δ'({q0,q1}, 1) = {q0,q2}   ← new state
+  δ'({q0,q2}, 0) = {q0,q1}
+  δ'({q0,q2}, 1) = {q0}
+  Accepting states (contain a state of F = {q2}): {q0,q2}
+----------------------------------------------------------------------
+DFA  (3 reachable states)
+  States     : {q0}, {q0,q1}, {q0,q2}
+  Initial    : {q0}
+  Accepting  : {q0,q2}
+
+Transition table   (→ initial, * accepting)
+  | DFA state | 0       | 1      
+--+-----------+---------+--------
+→ | {q0}      | {q0,q1} | {q0}   
+  | {q0,q1}   | {q0,q1} | {q0,q2}
+* | {q0,q2}   | {q0,q1} | {q0}   
+
+Diagrams saved: docs/diagrams/test1_ends_with_01_nfa.png, docs/diagrams/test1_ends_with_01_dfa.png
+======================================================================
+Input file: examples/test2_textbook_N4.json
+----------------------------------------------------------------------
+NFA
+  Q  = {1, 2, 3}
+  Σ  = {a, b}
+  q0 = 1
+  F  = {1}
+  δ  :
+       δ(1, b) = {2}
+       δ(1, ε) = {3}
+       δ(2, a) = {2, 3}
+       δ(2, b) = {3}
+       δ(3, a) = {1}
+----------------------------------------------------------------------
+Subset construction steps
+  Start state: E({1}) = {1,3}
+  δ'({1,3}, a) = E({1}) = {1,3}
+  δ'({1,3}, b) = E({2}) = {2}   ← new state
+  δ'({2}, a) = E({2,3}) = {2,3}   ← new state
+  δ'({2}, b) = E({3}) = {3}   ← new state
+  δ'({2,3}, a) = E({1,2,3}) = {1,2,3}   ← new state
+  δ'({2,3}, b) = E({3}) = {3}
+  δ'({3}, a) = E({1}) = {1,3}
+  δ'({3}, b) = E(∅) = ∅   ← new state
+  δ'({1,2,3}, a) = E({1,2,3}) = {1,2,3}
+  δ'({1,2,3}, b) = E({2,3}) = {2,3}
+  δ'(∅, a) = E(∅) = ∅
+  δ'(∅, b) = E(∅) = ∅
+  Accepting states (contain a state of F = {1}): {1,3}, {1,2,3}
+----------------------------------------------------------------------
+DFA  (6 reachable states)
+  States     : {1,3}, {2}, {2,3}, {3}, {1,2,3}, ∅
+  Initial    : {1,3}
+  Accepting  : {1,3}, {1,2,3}
+
+Transition table   (→ initial, * accepting)
+   | DFA state | a       | b    
+---+-----------+---------+------
+→* | {1,3}     | {1,3}   | {2}  
+   | {2}       | {2,3}   | {3}  
+   | {2,3}     | {1,2,3} | {3}  
+   | {3}       | {1,3}   | ∅    
+*  | {1,2,3}   | {1,2,3} | {2,3}
+   | ∅         | ∅       | ∅    
+
+Diagrams saved: docs/diagrams/test2_textbook_N4_nfa.png, docs/diagrams/test2_textbook_N4_dfa.png
+======================================================================
+Input file: examples/test3_second_last_is_1.json
+----------------------------------------------------------------------
+NFA
+  Q  = {p, q, r}
+  Σ  = {0, 1}
+  q0 = p
+  F  = {r}
+  δ  :
+       δ(p, 0) = {p}
+       δ(p, 1) = {p, q}
+       δ(q, 0) = {r}
+       δ(q, 1) = {r}
+----------------------------------------------------------------------
+Subset construction steps
+  Start state: E({p}) = {p}
+  δ'({p}, 0) = {p}
+  δ'({p}, 1) = {p,q}   ← new state
+  δ'({p,q}, 0) = {p,r}   ← new state
+  δ'({p,q}, 1) = {p,q,r}   ← new state
+  δ'({p,r}, 0) = {p}
+  δ'({p,r}, 1) = {p,q}
+  δ'({p,q,r}, 0) = {p,r}
+  δ'({p,q,r}, 1) = {p,q,r}
+  Accepting states (contain a state of F = {r}): {p,r}, {p,q,r}
+----------------------------------------------------------------------
+DFA  (4 reachable states)
+  States     : {p}, {p,q}, {p,r}, {p,q,r}
+  Initial    : {p}
+  Accepting  : {p,r}, {p,q,r}
+
+Transition table   (→ initial, * accepting)
+  | DFA state | 0     | 1      
+--+-----------+-------+--------
+→ | {p}       | {p}   | {p,q}  
+  | {p,q}     | {p,r} | {p,q,r}
+* | {p,r}     | {p}   | {p,q}  
+* | {p,q,r}   | {p,r} | {p,q,r}
+
+Diagrams saved: docs/diagrams/test3_second_last_is_1_nfa.png, docs/diagrams/test3_second_last_is_1_dfa.png
+======================================================================
+Input file: examples/test4_unary_mod2_or_mod3.json
+----------------------------------------------------------------------
+NFA
+  Q  = {s, a0, a1, b0, b1, b2}
+  Σ  = {0}
+  q0 = s
+  F  = {a0, b0}
+  δ  :
+       δ(s, ε) = {a0, b0}
+       δ(a0, 0) = {a1}
+       δ(a1, 0) = {a0}
+       δ(b0, 0) = {b1}
+       δ(b1, 0) = {b2}
+       δ(b2, 0) = {b0}
+----------------------------------------------------------------------
+Subset construction steps
+  Start state: E({s}) = {s,a0,b0}
+  δ'({s,a0,b0}, 0) = E({a1,b1}) = {a1,b1}   ← new state
+  δ'({a1,b1}, 0) = E({a0,b2}) = {a0,b2}   ← new state
+  δ'({a0,b2}, 0) = E({a1,b0}) = {a1,b0}   ← new state
+  δ'({a1,b0}, 0) = E({a0,b1}) = {a0,b1}   ← new state
+  δ'({a0,b1}, 0) = E({a1,b2}) = {a1,b2}   ← new state
+  δ'({a1,b2}, 0) = E({a0,b0}) = {a0,b0}   ← new state
+  δ'({a0,b0}, 0) = E({a1,b1}) = {a1,b1}
+  Accepting states (contain a state of F = {a0,b0}): {s,a0,b0}, {a0,b2}, {a1,b0}, {a0,b1}, {a0,b0}
+----------------------------------------------------------------------
+DFA  (7 reachable states)
+  States     : {s,a0,b0}, {a1,b1}, {a0,b2}, {a1,b0}, {a0,b1}, {a1,b2}, {a0,b0}
+  Initial    : {s,a0,b0}
+  Accepting  : {s,a0,b0}, {a0,b2}, {a1,b0}, {a0,b1}, {a0,b0}
+
+Transition table   (→ initial, * accepting)
+   | DFA state | 0      
+---+-----------+--------
+→* | {s,a0,b0} | {a1,b1}
+   | {a1,b1}   | {a0,b2}
+*  | {a0,b2}   | {a1,b0}
+*  | {a1,b0}   | {a0,b1}
+*  | {a0,b1}   | {a1,b2}
+   | {a1,b2}   | {a0,b0}
+*  | {a0,b0}   | {a1,b1}
+
+Diagrams saved: docs/diagrams/test4_unary_mod2_or_mod3_nfa.png, docs/diagrams/test4_unary_mod2_or_mod3_dfa.png
+======================================================================
+Input file: examples/test5_contains_aba.json
+----------------------------------------------------------------------
+NFA
+  Q  = {q0, q1, q2, q3}
+  Σ  = {a, b}
+  q0 = q0
+  F  = {q3}
+  δ  :
+       δ(q0, a) = {q0, q1}
+       δ(q0, b) = {q0}
+       δ(q1, b) = {q2}
+       δ(q2, a) = {q3}
+       δ(q3, a) = {q3}
+       δ(q3, b) = {q3}
+----------------------------------------------------------------------
+Subset construction steps
+  Start state: E({q0}) = {q0}
+  δ'({q0}, a) = {q0,q1}   ← new state
+  δ'({q0}, b) = {q0}
+  δ'({q0,q1}, a) = {q0,q1}
+  δ'({q0,q1}, b) = {q0,q2}   ← new state
+  δ'({q0,q2}, a) = {q0,q1,q3}   ← new state
+  δ'({q0,q2}, b) = {q0}
+  δ'({q0,q1,q3}, a) = {q0,q1,q3}
+  δ'({q0,q1,q3}, b) = {q0,q2,q3}   ← new state
+  δ'({q0,q2,q3}, a) = {q0,q1,q3}
+  δ'({q0,q2,q3}, b) = {q0,q3}   ← new state
+  δ'({q0,q3}, a) = {q0,q1,q3}
+  δ'({q0,q3}, b) = {q0,q3}
+  Accepting states (contain a state of F = {q3}): {q0,q1,q3}, {q0,q2,q3}, {q0,q3}
+----------------------------------------------------------------------
+DFA  (6 reachable states)
+  States     : {q0}, {q0,q1}, {q0,q2}, {q0,q1,q3}, {q0,q2,q3}, {q0,q3}
+  Initial    : {q0}
+  Accepting  : {q0,q1,q3}, {q0,q2,q3}, {q0,q3}
+
+Transition table   (→ initial, * accepting)
+  | DFA state  | a          | b         
+--+------------+------------+-----------
+→ | {q0}       | {q0,q1}    | {q0}      
+  | {q0,q1}    | {q0,q1}    | {q0,q2}   
+  | {q0,q2}    | {q0,q1,q3} | {q0}      
+* | {q0,q1,q3} | {q0,q1,q3} | {q0,q2,q3}
+* | {q0,q2,q3} | {q0,q1,q3} | {q0,q3}   
+* | {q0,q3}    | {q0,q1,q3} | {q0,q3}   
+
+Diagrams saved: docs/diagrams/test5_contains_aba_nfa.png, docs/diagrams/test5_contains_aba_dfa.png

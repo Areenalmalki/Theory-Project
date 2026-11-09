@@ -1,0 +1,13 @@
+{
+  "name": "Test 3 - Second-to-last symbol is 1",
+  "description": "L3 = { w in {0,1}* : the second symbol from the end is 1 }. The DFA must remember the last two symbols, so it needs 4 states.",
+  "language_regex": "[01]*1[01]",
+  "states": ["p", "q", "r"],
+  "alphabet": ["0", "1"],
+  "start": "p",
+  "accepting": ["r"],
+  "transitions": {
+    "p": {"0": ["p"], "1": ["p", "q"]},
+    "q": {"0": ["r"], "1": ["r"]}
+  }
+}

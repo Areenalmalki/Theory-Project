@@ -1,0 +1,17 @@
+{
+  "name": "Test 4 - Unary length divisible by 2 or by 3 (epsilon-NFA)",
+  "description": "L4 = { 0^k : k is a multiple of 2 or a multiple of 3 }. The start state branches with epsilon moves into a 2-cycle and a 3-cycle.",
+  "language_regex": "(00)*|(000)*",
+  "states": ["s", "a0", "a1", "b0", "b1", "b2"],
+  "alphabet": ["0"],
+  "start": "s",
+  "accepting": ["a0", "b0"],
+  "transitions": {
+    "s":  {"eps": ["a0", "b0"]},
+    "a0": {"0": ["a1"]},
+    "a1": {"0": ["a0"]},
+    "b0": {"0": ["b1"]},
+    "b1": {"0": ["b2"]},
+    "b2": {"0": ["b0"]}
+  }
+}

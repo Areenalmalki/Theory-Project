@@ -1,0 +1,13 @@
+{
+  "name": "Test 2 - Textbook NFA N4 (with epsilon moves)",
+  "description": "The NFA N4 from Sipser, Example 1.41 (Introduction to the Theory of Computation). Contains an epsilon move and missing transitions, so the dead state appears in the DFA.",
+  "states": ["1", "2", "3"],
+  "alphabet": ["a", "b"],
+  "start": "1",
+  "accepting": ["1"],
+  "transitions": {
+    "1": {"b": ["2"], "eps": ["3"]},
+    "2": {"a": ["2", "3"], "b": ["3"]},
+    "3": {"a": ["1"]}
+  }
+}

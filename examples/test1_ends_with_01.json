@@ -1,0 +1,13 @@
+{
+  "name": "Test 1 - Binary strings ending with 01",
+  "description": "L1 = { w in {0,1}* : w ends with 01 }. Plain NFA (no epsilon moves); q0 'guesses' where the final 01 starts.",
+  "language_regex": "[01]*01",
+  "states": ["q0", "q1", "q2"],
+  "alphabet": ["0", "1"],
+  "start": "q0",
+  "accepting": ["q2"],
+  "transitions": {
+    "q0": {"0": ["q0", "q1"], "1": ["q0"]},
+    "q1": {"1": ["q2"]}
+  }
+}
