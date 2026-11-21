@@ -1,9 +1,6 @@
-"""
-app.py  -  Graphical user interface for the NFA -> DFA Conversion Tool.
-
-Run with:   streamlit run app.py
-Then open the address shown in the terminal (normally http://localhost:8501).
-"""
+# app.py
+# Streamlit interface for the NFA to DFA converter.
+# To run: python3 -m streamlit run app.py
 
 import glob
 import json
