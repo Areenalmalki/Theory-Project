@@ -1,102 +1,72 @@
-# NFA to DFA Conversion Tool — CSC339 Course Project
+# NFA to DFA Conversion Tool
+CSC339 – Theory of Computation, Course Project
 
-Converts a Nondeterministic Finite Automaton (NFA, with or without ε-moves) into an
-equivalent Deterministic Finite Automaton (DFA) using the **Subset Construction Algorithm**,
-and shows the DFA states, transition table, initial/accepting states and a state diagram.
+This tool converts an NFA (including NFAs with ε-transitions) into an equivalent DFA using the subset construction algorithm. It shows the DFA states, the initial and accepting states, the transition table, and a state diagram of the result.
 
----
+## Requirements
 
-## 1. Requirements
+- Python 3.9 or newer
+- The Python packages listed in `requirements.txt` (streamlit, graphviz, pandas)
+- Graphviz, which is used to draw the diagrams
 
-| What | Why |
-|------|-----|
-| **Python 3.9 or newer** | the program itself |
-| Python packages: `streamlit`, `graphviz`, `pandas` | user interface, diagrams, tables |
-| **Graphviz program** (recommended) | draws the diagrams as PNG/SVG |
+## Installation
 
-### Step 1 – install the Python packages
-
-Open a terminal (Command Prompt / PowerShell on Windows) **inside the project folder** and run:
+Open a terminal inside the project folder:
 
 ```bash
-pip install -r requirements.txt
+cd Theory-Project
 ```
 
-(If `pip` is not found, use `python -m pip install -r requirements.txt`, or `py -m pip ...` on Windows.)
-
-### Step 2 – install the Graphviz program
-
-The `graphviz` Python package needs the Graphviz `dot` program:
-
-- **Windows:** download the installer from <https://graphviz.org/download/> and, during setup, choose
-  **"Add Graphviz to the system PATH"**. Close and reopen the terminal afterwards.
-- **macOS:** `brew install graphviz`
-- **Ubuntu / Debian:** `sudo apt install graphviz`
-
-Check it with `dot -V`.
-
-> If Graphviz is not installed, the app still works: the diagrams are drawn in the browser
-> instead (only the PNG/SVG download buttons are unavailable).
-
----
-
-## 2. Running the project
-
-### Graphical interface (main tool)
+Install the Python packages:
 
 ```bash
-streamlit run app.py
+python3 -m pip install -r requirements.txt
 ```
 
-The browser opens automatically at **http://localhost:8501**
-(if it does not, open that address yourself; use `python -m streamlit run app.py` if `streamlit` is not found).
+Install Graphviz:
 
-1. Choose an example NFA from the sidebar, upload a JSON file, or type your own NFA.
-2. Press **▶ Convert to DFA**.
-3. View the DFA states, initial and accepting states, transition table, step-by-step trace and state diagram.
-4. Optionally type strings in **Test strings** to run them on both the NFA and the DFA.
+- macOS: `brew install graphviz`
+- Windows: download it from https://graphviz.org/download/ and tick "Add Graphviz to the system PATH" during setup
+- Linux: `sudo apt install graphviz`
 
-Stop the server with `Ctrl + C` in the terminal.
+You can check that Graphviz is installed with `dot -V`.
 
-### Command line (optional)
+## How to run
+
+### Graphical interface
 
 ```bash
-python main.py examples/test2_textbook_N4.json
-python main.py examples/*.json --out output --check 01 1101
-python main.py examples/test3_second_last_is_1.json --short     # names A, B, C …
+python3 -m streamlit run app.py
 ```
 
-Prints the NFA, every step of the subset construction and the DFA transition table,
-and saves NFA/DFA diagrams as PNG files in the `output/` folder.
+The interface opens in your browser at http://localhost:8501.
 
-### Automated tests
+1. Pick one of the example NFAs from the sidebar, or type your own NFA.
+2. Click **Convert to DFA**.
+3. The DFA states, transition table and state diagram are shown below.
+4. You can also enter strings in the test section to check them on both the NFA and the DFA.
+
+Press `Ctrl + C` in the terminal to stop it.
+
+### Tests
 
 ```bash
-python -m unittest discover -s tests -v
+python3 -m unittest discover -s tests -v
 ```
 
-Checks every example DFA against its NFA on all strings of length 0–10, against the
-expected language, and against the textbook DFA (11 tests).
+## Entering an NFA
 
----
+In the interface, write each transition on its own line:
 
-## 3. Entering an NFA
+```
+q0, 0 -> q0, q1
+q0, 1 -> q0
+q1, 1 -> q2
+```
 
-In the interface:
+Write `eps` for an ε-transition, for example `q0, eps -> q1`. A transition that is not written goes to the empty set.
 
-| Field | Example |
-|-------|---------|
-| States Q | `q0, q1, q2` |
-| Alphabet Σ | `0, 1` |
-| Initial state | `q0` |
-| Accepting states F | `q2` |
-| Transitions (one per line) | `q0, 0 -> q0, q1`<br>`q0, 1 -> q0`<br>`q1, 1 -> q2` |
-
-- Use `eps` (or `ε`, `epsilon`, `λ`) for empty moves, e.g. `q0, eps -> q1`.
-- A missing rule means the transition goes to the empty set ∅.
-- Lines starting with `#` are comments.
-
-JSON format (files in `examples/`):
+The example NFAs in `examples/` are stored as JSON files like this:
 
 ```json
 {
@@ -111,32 +81,22 @@ JSON format (files in `examples/`):
 }
 ```
 
----
+## Files
 
-## 4. Project structure
+- `automata.py`: NFA and DFA classes and the subset construction algorithm
+- `app.py`: the graphical interface
+- `visualize.py`: draws the state diagrams
+- `examples/`: the five test NFAs
+- `tests/`: automated tests
+- `docs/`: screenshots and diagrams used in the report
+- `Project_Report.pdf`: the project report
 
-```
-NFA_to_DFA_Tool/
-├── app.py                  Streamlit graphical user interface
-├── automata.py             NFA/DFA classes + subset construction algorithm
-├── visualize.py            Graphviz state diagrams
-├── main.py                 command-line version
-├── requirements.txt
-├── Project_Report.pdf      project report
-├── examples/               5 test NFAs (JSON)
-├── tests/                  automated tests
-└── docs/
-    ├── screenshots/        screenshots of the tool
-    ├── diagrams/           NFA and DFA diagrams of every test case
-    └── sample_output.txt   command-line output for all examples
-```
-
-## 5. Test NFAs
+## Test cases
 
 | File | Language | DFA states |
 |------|----------|-----------|
 | test1_ends_with_01 | strings over {0,1} ending with 01 | 3 |
-| test2_textbook_N4 | Sipser Example 1.41 (ε-move, dead state) | 6 |
-| test3_second_last_is_1 | second-to-last symbol is 1 | 4 |
-| test4_unary_mod2_or_mod3 | 0^k, k multiple of 2 or 3 (ε-NFA) | 7 |
-| test5_contains_aba | strings over {a,b} containing aba | 6 |
+| test2_textbook_N4 | textbook example N4 (has an ε-transition) | 6 |
+| test3_second_last_is_1 | second symbol from the end is 1 | 4 |
+| test4_unary_mod2_or_mod3 | 0^k where k is a multiple of 2 or 3 | 7 |
+| test5_contains_aba | strings over {a,b} that contain aba | 6 |

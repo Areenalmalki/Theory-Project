@@ -1,14 +1,10 @@
-"""
-visualize.py
-------------
-Builds Graphviz state diagrams for the NFA (input) and the DFA (output).
-
-Conventions used in the drawings
-    * an arrow coming from nowhere points to the initial state
-    * double circle  = accepting state
-    * edges between the same pair of states are merged: label "a, b"
-    * the dead state ∅ is drawn dashed / grey so it is easy to spot
-"""
+# visualize.py
+# Draws the NFA and DFA state diagrams using Graphviz.
+# - The arrow labeled "start" points to the initial state.
+# - Accepting states are double circles.
+# - If two states have more than one transition between them,
+#   they share one arrow, labeled like "a, b".
+# - The dead state ∅ is grey with a dashed border.
 
 from __future__ import annotations
 
@@ -55,16 +51,12 @@ def nfa_to_graph(nfa: NFA) -> graphviz.Digraph:
     return g
 
 
-def dfa_to_graph(dfa: DFA, short_names: bool = False) -> graphviz.Digraph:
+def dfa_to_graph(dfa: DFA) -> graphviz.Digraph:
     g = _base_graph("DFA")
-    names = dfa.short_names()
     node_id = {s: f"s{i}" for i, s in enumerate(dfa.states)}
 
     for s in dfa.states:
-        if short_names:
-            label = names[s] if not s else f"{names[s]}\n{dfa.set_name(s)}"
-        else:
-            label = dfa.set_name(s)
+        label = dfa.set_name(s)
         attrs = {"shape": "doublecircle" if s in dfa.accepting else "circle"}
         if not s:  # dead / trap state
             attrs.update(style="filled,dashed", fillcolor="#F2F2F2", color="#888888")
@@ -84,11 +76,11 @@ def dfa_to_graph(dfa: DFA, short_names: bool = False) -> graphviz.Digraph:
 
 
 def render(graph: graphviz.Digraph, out_path_no_ext: str, fmt: str = "png") -> str:
-    """Write the diagram to disk (requires Graphviz). Returns the file path."""
+    """Write the diagram to disk (requires Graphviz) and returns the file path."""
     graph.format = fmt
     return graph.render(out_path_no_ext, cleanup=True)
 
 
 def to_bytes(graph: graphviz.Digraph, fmt: str = "png") -> bytes:
-    """Render in memory (requires Graphviz)."""
+    """Render in memory (requires Graphviz)"""
     return graph.pipe(format=fmt)

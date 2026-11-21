@@ -1,23 +1,12 @@
-"""
-automata.py
------------
-Core data structures and the Subset Construction algorithm for the
-CSC339 "NFA to DFA Conversion Tool" project.
-
-An NFA is the 5-tuple  N = (Q, Σ, δ, q0, F)
-    Q  : finite set of states
-    Σ  : input alphabet
-    δ  : Q × (Σ ∪ {ε}) -> P(Q)      (transition function)
-    q0 : initial state
-    F  : set of accepting states
-
-The equivalent DFA is  D = (Q', Σ, δ', q0', F')
-    Q'  ⊆ P(Q)                       (each DFA state is a SET of NFA states)
-    q0' = E({q0})                    (ε-closure of the start state)
-    δ'(R, a) = E( ∪_{r ∈ R} δ(r, a) )
-    F'  = { R ∈ Q' : R ∩ F ≠ ∅ }
-Only the DFA states reachable from q0' are generated (worklist / BFS).
-"""
+# automata.py
+# NFA and DFA classes, and the subset construction algorithm.
+#
+# NFA: N = (Q, Σ, δ, q0, F), where δ can also have ε-moves.
+# DFA: each state is a set of NFA states.
+#   start state        = E({q0})
+#   δ'(R, a)           = E(move(R, a))
+#   accepting states   = sets that contain at least one state of F
+# We only build the states we can reach from the start state.
 
 from __future__ import annotations
 
@@ -41,9 +30,8 @@ def _norm_symbol(sym: str) -> str:
     return EPSILON if s.lower() in EPSILON_ALIASES else s
 
 
-# --------------------------------------------------------------------------- #
 #  NFA
-# --------------------------------------------------------------------------- #
+
 @dataclass
 class NFA:
     states: List[str]
@@ -53,7 +41,7 @@ class NFA:
     # (state, symbol) -> set of next states ; symbol may be EPSILON
     transitions: Dict[Tuple[str, str], Set[str]] = field(default_factory=dict)
 
-    # ---------------- validation ----------------
+    #  validation
     def validate(self) -> None:
         if not self.states:
             raise AutomatonError("The set of states Q is empty.")
@@ -90,7 +78,7 @@ class NFA:
         return any(sym == EPSILON and dsts
                    for (_, sym), dsts in self.transitions.items())
 
-    # ---------------- core NFA operations ----------------
+    # core NFA operations
     def move(self, states: Iterable[str], symbol: str) -> Set[str]:
         """∪ δ(r, symbol) for r in states."""
         out: Set[str] = set()
@@ -119,7 +107,7 @@ class NFA:
                 return False
         return bool(current & self.accepting)
 
-    # ---------------- (de)serialisation ----------------
+    #  (de)serialisation
     @classmethod
     def from_dict(cls, data: dict) -> "NFA":
         try:
@@ -164,17 +152,10 @@ class NFA:
     @classmethod
     def from_text(cls, states: str, alphabet: str, start: str,
                   accepting: str, transitions: str) -> "NFA":
-        """
-        Build an NFA from the plain-text fields of the user interface.
-
-        states / alphabet / accepting : comma- or space-separated lists
-        start                         : one state name
-        transitions                   : one rule per line, e.g.
-                                            q0, a -> q0, q1
-                                            q1, eps -> q2
-                                        (blank lines and lines starting
-                                         with # are ignored)
-        """
+        # Reads the NFA from the text boxes in the interface.
+        # Lists can be separated by commas or spaces.
+        # Each transition goes on its own line, like:  q0, a -> q0, q1
+        # Empty lines and lines that start with # are skipped.
         def split(s: str) -> List[str]:
             return [t for t in s.replace(",", " ").split() if t]
 
@@ -213,9 +194,9 @@ class NFA:
         return "\n".join(lines)
 
 
-# --------------------------------------------------------------------------- #
+
 #  DFA
-# --------------------------------------------------------------------------- #
+
 @dataclass
 class DFA:
     states: List[FrozenSet[str]]                # in discovery (BFS) order
@@ -226,28 +207,17 @@ class DFA:
     nfa_order: List[str]                        # to print sets nicely
     steps: List[str] = field(default_factory=list)  # trace for the UI
 
-    # ---------------- naming helpers ----------------
+    #  naming helpers
     def set_name(self, s: FrozenSet[str]) -> str:
         if not s:
             return "∅"
         order = {q: i for i, q in enumerate(self.nfa_order)}
         return "{" + ",".join(sorted(s, key=lambda q: order.get(q, 10**9))) + "}"
 
-    def short_names(self) -> Dict[FrozenSet[str], str]:
-        """A, B, C, ... in discovery order (∅ keeps the name ∅)."""
-        names, k = {}, 0
-        for s in self.states:
-            if not s:
-                names[s] = "∅"
-            else:
-                names[s] = _letter(k)
-                k += 1
-        return names
+    def name(self, s: FrozenSet[str]) -> str:
+        return self.set_name(s)
 
-    def name(self, s: FrozenSet[str], short: bool = False) -> str:
-        return self.short_names()[s] if short else self.set_name(s)
-
-    # ---------------- behaviour ----------------
+    # behaviour
     def accepts(self, word: str) -> bool:
         cur = self.start
         for ch in word:
@@ -257,7 +227,7 @@ class DFA:
         return cur in self.accepting
 
     def run(self, word: str) -> List[FrozenSet[str]]:
-        """Sequence of DFA states visited while reading `word`."""
+        """Sequence of DFA states visited while reading `word`"""
         path = [self.start]
         cur = self.start
         for ch in word:
@@ -265,65 +235,29 @@ class DFA:
             path.append(cur)
         return path
 
-    def transition_table(self, short: bool = False) -> List[Dict[str, str]]:
-        """Rows ready for display: marks → start and * accepting."""
+    def transition_table(self) -> List[Dict[str, str]]:
+        """Rows ready for display: marks → start and * accepting"""
         rows = []
         for s in self.states:
             mark = ("→" if s == self.start else "") + ("*" if s in self.accepting else "")
-            row = {"": mark, "DFA state": self.name(s, short)}
-            if short:
-                row["NFA states"] = self.set_name(s)
+            row = {"": mark, "DFA state": self.name(s)}
             for a in self.alphabet:
-                row[a] = self.name(self.transitions[(s, a)], short)
+                row[a] = self.name(self.transitions[(s, a)])
             rows.append(row)
         return rows
 
-    def table_text(self, short: bool = False) -> str:
-        rows = self.transition_table(short)
-        cols = list(rows[0].keys())
-        width = {c: max(len(c), *(len(r[c]) for r in rows)) for c in cols}
-        line = lambda r: " | ".join(r[c].ljust(width[c]) for c in cols)
-        head = line({c: c for c in cols})
-        return "\n".join([head, "-+-".join("-" * width[c] for c in cols)]
-                         + [line(r) for r in rows])
-
-    def to_dict(self, short: bool = False) -> dict:
-        n = lambda s: self.name(s, short)
-        return {
-            "states": [n(s) for s in self.states],
-            "alphabet": self.alphabet,
-            "start": n(self.start),
-            "accepting": [n(s) for s in self.states if s in self.accepting],
-            "transitions": {n(s): {a: n(self.transitions[(s, a)])
-                                   for a in self.alphabet} for s in self.states},
-        }
 
 
-def _letter(k: int) -> str:
-    """0->A, 25->Z, 26->A1, ..."""
-    return chr(ord("A") + k % 26) + (str(k // 26) if k >= 26 else "")
-
-
-# --------------------------------------------------------------------------- #
 #  Subset Construction
-# --------------------------------------------------------------------------- #
-def subset_construction(nfa: NFA) -> DFA:
-    """
-    Convert an NFA (with or without ε-moves) into an equivalent DFA.
 
-    Algorithm (worklist / BFS over subsets):
-        1. start  <- E({q0});  mark it unprocessed
-        2. while some DFA state R is unprocessed:
-               for every a in Σ:
-                   U <- E(move(R, a))
-                   if U is new: add U to the DFA states, mark unprocessed
-                   δ'(R, a) <- U
-        3. R is accepting  iff  R ∩ F ≠ ∅
-    Because we only expand states taken from the queue, exactly the
-    reachable subsets are generated (not all 2^|Q| of them).
-    The empty set ∅ (if reached) becomes the DFA's dead/trap state so the
-    DFA transition function is total.
-    """
+def subset_construction(nfa: NFA) -> DFA:
+    # Converts the NFA to a DFA using subset construction.
+    # 1. The start state is E({q0}).
+    # 2. Take a state R from the queue. For each symbol a,
+    #    U = E(move(R, a)). If U is new, add it to the queue.
+    # 3. A DFA state is accepting if it has a state from F.
+    # We only expand states from the queue, so we get the reachable
+    # states only. If ∅ shows up, it is the dead state.
     nfa.validate()
     steps: List[str] = []
     fmt = lambda s: "∅" if not s else "{" + ",".join(

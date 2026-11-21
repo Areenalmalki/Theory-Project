@@ -19,9 +19,9 @@ HAS_DOT = graphviz_available()
 st.set_page_config(page_title="NFA → DFA Converter", page_icon="🔁", layout="wide")
 
 
-# --------------------------------------------------------------------------- #
+
 #  helpers
-# --------------------------------------------------------------------------- #
+
 def load_into_form(nfa: NFA) -> None:
     st.session_state.f_states = ", ".join(nfa.states)
     st.session_state.f_alphabet = ", ".join(nfa.alphabet)
@@ -48,7 +48,7 @@ def on_example_change() -> None:
 
 def show_graph(graph, key: str) -> None:
     if HAS_DOT:
-        st.image(to_bytes(graph, "png"), use_container_width=False)
+        st.image(to_bytes(graph, "png"), width="content")
         c1, c2 = st.columns(2)
         c1.download_button("⬇ PNG", to_bytes(graph, "png"), f"{key}.png", "image/png",
                            key=f"{key}_png")
@@ -67,29 +67,15 @@ if "f_states" not in st.session_state:
     else:
         on_example_change()
 
-# --------------------------------------------------------------------------- #
+
 #  sidebar
-# --------------------------------------------------------------------------- #
+
 with st.sidebar:
     st.header("📂 Load an NFA")
     st.selectbox("Example NFAs", ["— empty —"] + list(EXAMPLES),
                  index=1 if EXAMPLES else 0,
                  key="example_choice", on_change=on_example_change)
 
-    up = st.file_uploader("…or upload a JSON file", type="json")
-    if up is not None and st.session_state.get("_last_upload") != up.file_id:
-        try:
-            load_into_form(NFA.from_dict(json.load(up)))
-            st.session_state._last_upload = up.file_id
-            st.success("NFA loaded from file.")
-            st.rerun()
-        except (AutomatonError, ValueError) as exc:
-            st.error(f"Invalid file: {exc}")
-
-    st.divider()
-    st.header("⚙ Display")
-    short = st.toggle("Rename DFA states A, B, C …", value=False,
-                      help="Show short names; the subset of NFA states is still displayed.")
     st.divider()
     st.caption("**Input format for transitions** – one rule per line:\n\n"
                "`state, symbol -> next1, next2`\n\n"
@@ -99,9 +85,9 @@ with st.sidebar:
         st.warning("Graphviz program not found – diagrams are drawn in the "
                    "browser and cannot be downloaded. See README.")
 
-# --------------------------------------------------------------------------- #
+
 #  main area
-# --------------------------------------------------------------------------- #
+
 st.title("🔁 NFA → DFA Conversion Tool")
 st.caption("CSC339 – Theory of Computation · Subset Construction Algorithm")
 
@@ -128,15 +114,11 @@ with left:
     if error:
         st.error(error)
 
-    if st.button("▶ Convert to DFA", type="primary", use_container_width=True,
+    if st.button("▶ Convert to DFA", type="primary", width="stretch",
                  disabled=nfa is None):
         st.session_state.dfa = subset_construction(nfa)
         st.session_state.dfa_nfa = nfa.to_dict()
 
-    if nfa is not None:
-        st.download_button("💾 Save this NFA as JSON",
-                           json.dumps(nfa.to_dict(), indent=2, ensure_ascii=False),
-                           "nfa.json", "application/json", use_container_width=True)
 
 with right:
     st.subheader("NFA state diagram")
@@ -145,9 +127,9 @@ with right:
     else:
         st.info("Fix the input to see the NFA diagram.")
 
-# --------------------------------------------------------------------------- #
+
 #  results
-# --------------------------------------------------------------------------- #
+
 dfa = st.session_state.get("dfa")
 if dfa is not None and nfa is not None and st.session_state.get("dfa_nfa") != nfa.to_dict():
     st.warning("The NFA was edited – press **Convert to DFA** again to update the result.")
@@ -158,28 +140,25 @@ if dfa is not None:
 
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("DFA states", len(dfa.states))
-    m2.metric("Initial state", dfa.name(dfa.start, short))
+    m2.metric("Initial state", dfa.name(dfa.start))
     m3.metric("Accepting states", len(dfa.accepting))
     m4.metric("Dead state ∅", "yes" if frozenset() in dfa.states else "no")
 
-    st.markdown("**States  Q′:**  " + ",  ".join(f"`{dfa.name(s, short)}`" for s in dfa.states))
-    st.markdown("**Initial state  q₀′:**  " + f"`{dfa.name(dfa.start, short)}`")
+    st.markdown("**States  Q′:**  " + ",  ".join(f"`{dfa.name(s)}`" for s in dfa.states))
+    st.markdown("**Initial state  q₀′:**  " + f"`{dfa.name(dfa.start)}`")
     st.markdown("**Accepting states  F′:**  " + (",  ".join(
-        f"`{dfa.name(s, short)}`" for s in dfa.states if s in dfa.accepting) or "none"))
+        f"`{dfa.name(s)}`" for s in dfa.states if s in dfa.accepting) or "none"))
 
     t1, t2 = st.columns([1, 1.25], gap="large")
     with t1:
         st.markdown("**Transition table**  (→ initial, * accepting)")
-        st.dataframe(pd.DataFrame(dfa.transition_table(short)),
-                     hide_index=True, use_container_width=True)
+        st.dataframe(pd.DataFrame(dfa.transition_table()),
+                     hide_index=True, width="stretch")
         with st.expander("Subset construction – step by step", expanded=False):
             st.code("\n".join(dfa.steps), language=None)
-        st.download_button("💾 Download DFA as JSON",
-                           json.dumps(dfa.to_dict(short), indent=2, ensure_ascii=False),
-                           "dfa.json", "application/json")
     with t2:
         st.markdown("**DFA state diagram**")
-        show_graph(dfa_to_graph(dfa, short), "dfa")
+        show_graph(dfa_to_graph(dfa), "dfa")
 
     st.divider()
     st.subheader("3 · Test strings")
@@ -196,9 +175,9 @@ if dfa is not None:
                              "DFA path": f"symbol '{bad[0]}' not in Σ", "agree": "—"})
                 continue
             n_ok, d_ok = sim.accepts(w), dfa.accepts(w)
-            path = " → ".join(dfa.name(s, short) for s in dfa.run(w))
+            path = " → ".join(dfa.name(s) for s in dfa.run(w))
             rows.append({"string": w or "ε",
                          "NFA": "✅ accept" if n_ok else "❌ reject",
                          "DFA": "✅ accept" if d_ok else "❌ reject",
                          "DFA path": path, "agree": "✔" if n_ok == d_ok else "✘"})
-        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
